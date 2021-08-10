@@ -14,42 +14,42 @@ public class Main {
 
     public static void main(String[] args) {
 
-	Socket clientSocket = null;
+        Socket clientSocket = null;
         Scanner scanner = new Scanner(System.in);
-        try(ServerSocket serverSocket = new ServerSocket(8888)){
+        try (ServerSocket serverSocket = new ServerSocket(8888)) {
             System.out.println("Server START");
             clientSocket = serverSocket.accept();
             System.out.println("User onlyn: " + clientSocket.getRemoteSocketAddress());
             DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
             DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-        Thread threadReader = new Thread(()-> {
-            try{
-                while(true){
-                    
-                    outputStream.writeUTF(scanner.nextLine());
+            Thread threadReader = new Thread(() -> {
+                try {
+                    while (true) {
+
+                        outputStream.writeUTF(scanner.nextLine());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-        }catch(IOException e){
-                e.printStackTrace();
+            });
+            threadReader.setDaemon(true);
+            threadReader.start();
+            while (true) {
+                String str = inputStream.readUTF();
+                if (str.equals("/close")) {
+                    System.out.println("User offlyne");
+                    outputStream.writeUTF("/close");
+                    break;
+                } else {
+                    System.out.println("User " + str);
+                }
             }
-        });
-threadReader.setDaemon(true);
-threadReader.start();
-while(true){
-    String str = inputStream.readUTF();
-    if(str.equals("/close")){
-        System.out.println("User offlyne");
-        outputStream.writeUTF("/close");
-        break;
-    }else{
-        System.out.println("User " + str);
-    }
-}
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try{
+        } finally {
+            try {
                 clientSocket.close();
-            }catch(IOException |NullPointerException e){
+            } catch (IOException | NullPointerException e) {
                 e.printStackTrace();
             }
         }
